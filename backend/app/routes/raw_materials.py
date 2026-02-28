@@ -82,23 +82,33 @@ async def upload_bom(file: UploadFile = File(...), db: Session = Depends(get_db)
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid file: {str(e)}")
         
-    required = {"Product Name", "Raw Material", "Unit", "Quantity Per Unit"}
-    cols = set(df.columns)
-    if not required.issubset(cols):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Required columns: {required}. Found: {list(cols)}",
-        )
+    # Normalize columns to lowercase and stripped
+    original_cols = {str(c): str(c).strip().lower() for c in df.columns}
+    
+    # We need these lower-case columns
+    required_lower = {"product name", "raw material", "unit", "quantity per unit"}
+    found_lower = set(original_cols.values())
+    
+    if not required_lower.issubset(found_lower):
+        # Fallback check if "product name" is just "product" or something
+        err = f"Required columns (case-insensitive): {required_lower}. Found: {found_lower}"
+        raise HTTPException(status_code=400, detail=err)
         
     created = 0
     errors = []
     
+    # Map back the required lower case to the actual column name string
+    col_map = {}
+    for actual_col, lower_col in original_cols.items():
+        if lower_col in required_lower:
+            col_map[lower_col] = actual_col
+            
     for _, row in df.iterrows():
         try:
-            prod_name = row.get("Product Name")
-            rm_name = row.get("Raw Material")
-            unit = row.get("Unit")
-            qty = row.get("Quantity Per Unit")
+            prod_name = row.get(col_map["product name"])
+            rm_name = row.get(col_map["raw material"])
+            unit = row.get(col_map["unit"])
+            qty = row.get(col_map["quantity per unit"])
             
             if pd.isna(prod_name) or pd.isna(rm_name) or pd.isna(qty):
                 continue
