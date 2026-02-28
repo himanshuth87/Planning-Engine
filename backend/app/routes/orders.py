@@ -55,7 +55,7 @@ async def upload_excel(file: UploadFile = File(...), db: Session = Depends(get_d
             df = pd.read_excel(io.BytesIO(content))
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid file: {str(e)}")
-    required = {"Order ID", "Product Name", "Quantity", "Color", "Delivery Date"}
+    required = {"Order ID", "Product Name", "Quantity", "Color"}
     cols = set(df.columns)
     if not required.issubset(cols):
         raise HTTPException(
@@ -90,14 +90,18 @@ async def upload_excel(file: UploadFile = File(...), db: Session = Depends(get_d
                 
             seen_in_batch.add(line_key)
 
-            delivery = row["Delivery Date"]
-            if pd.isna(delivery):
-                errors.append(f"Row {order_id}: Missing Delivery Date")
-                continue
-            if hasattr(delivery, "date"):
-                delivery = delivery.date()
-            elif isinstance(delivery, str):
-                delivery = date.fromisoformat(delivery[:10])
+            delivery_val = row.get("Delivery Date")
+            if pd.isna(delivery_val) or not delivery_val:
+                delivery = date.today()
+            elif hasattr(delivery_val, "date"):
+                delivery = delivery_val.date()
+            elif isinstance(delivery_val, str):
+                try:
+                    delivery = date.fromisoformat(delivery_val[:10])
+                except Exception:
+                    delivery = date.today()
+            else:
+                delivery = date.today()
 
             qty = row["Quantity"]
             qty_int = 0 if pd.isna(qty) else int(float(qty))
