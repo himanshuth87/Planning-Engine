@@ -5,13 +5,15 @@ from sqlalchemy.orm import sessionmaker
 
 from app.config import settings
 
+db_url = settings.get_database_url()
+
 _connect_args = {}
-if "sqlite" in settings.DATABASE_URL:
+if "sqlite" in db_url:
     _connect_args = {"check_same_thread": False}
-_is_sqlite = "sqlite" in settings.DATABASE_URL
+_is_sqlite = "sqlite" in db_url
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    db_url,
     connect_args=_connect_args,
     pool_pre_ping=not _is_sqlite,
     echo=False,
