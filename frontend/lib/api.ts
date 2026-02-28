@@ -1,4 +1,5 @@
-const API = process.env.NEXT_PUBLIC_API_URL ?? '';
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+const API = rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl;
 
 export async function api<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${API}${path}`, {
