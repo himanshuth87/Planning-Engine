@@ -10,7 +10,7 @@ class SalesOrder(Base):
     __tablename__ = "sales_orders"
 
     id = Column(Integer, primary_key=True, index=True)
-    order_id = Column(String(100), unique=True, index=True, nullable=False)
+    order_id = Column(String(100), index=True, nullable=False)
     product_name = Column(String(255), nullable=False)
     quantity = Column(Integer, nullable=False)
     color = Column(String(100), nullable=False)

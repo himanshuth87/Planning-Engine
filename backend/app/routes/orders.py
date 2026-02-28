@@ -27,8 +27,12 @@ def list_orders(
 
 @router.post("/", response_model=SalesOrderResponse)
 def create_order(data: SalesOrderCreate, db: Session = Depends(get_db)):
-    if db.query(SalesOrder).filter(SalesOrder.order_id == data.order_id).first():
-        raise HTTPException(status_code=400, detail="Order ID already exists")
+    if db.query(SalesOrder).filter(
+        SalesOrder.order_id == data.order_id,
+        SalesOrder.product_name == data.product_name,
+        SalesOrder.color == data.color
+    ).first():
+        raise HTTPException(status_code=400, detail="Line item for this order already exists")
     order = SalesOrder(**data.model_dump())
     db.add(order)
     db.commit()
@@ -69,11 +73,22 @@ async def upload_excel(file: UploadFile = File(...), db: Session = Depends(get_d
             if not order_id:
                 continue
 
-            if order_id in seen_in_batch or db.query(SalesOrder).filter(SalesOrder.order_id == order_id).first():
-                errors.append(f"Duplicate Order ID: {order_id}")
+            color = row["Color"]
+            color_str = "Default" if pd.isna(color) else str(color).strip()
+            
+            prod_name = row["Product Name"]
+            prod_name_str = "Unknown" if pd.isna(prod_name) else str(prod_name).strip()
+
+            line_key = (order_id, prod_name_str, color_str)
+            if line_key in seen_in_batch or db.query(SalesOrder).filter(
+                SalesOrder.order_id == order_id,
+                SalesOrder.product_name == prod_name_str,
+                SalesOrder.color == color_str
+            ).first():
+                errors.append(f"Duplicate Line: {order_id} ({prod_name_str} - {color_str})")
                 continue
                 
-            seen_in_batch.add(order_id)
+            seen_in_batch.add(line_key)
 
             delivery = row["Delivery Date"]
             if pd.isna(delivery):
@@ -83,12 +98,6 @@ async def upload_excel(file: UploadFile = File(...), db: Session = Depends(get_d
                 delivery = delivery.date()
             elif isinstance(delivery, str):
                 delivery = date.fromisoformat(delivery[:10])
-
-            color = row["Color"]
-            color_str = "Default" if pd.isna(color) else str(color).strip()
-            
-            prod_name = row["Product Name"]
-            prod_name_str = "Unknown" if pd.isna(prod_name) else str(prod_name).strip()
 
             qty = row["Quantity"]
             qty_int = 0 if pd.isna(qty) else int(float(qty))

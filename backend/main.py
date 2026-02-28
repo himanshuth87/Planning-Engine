@@ -26,6 +26,14 @@ app.include_router(dashboard.router, prefix=settings.API_PREFIX)
 @app.on_event("startup")
 def create_tables():
     Base.metadata.create_all(bind=engine)
+    try:
+        from sqlalchemy import text
+        with engine.connect() as conn:
+            conn.execute(text("ALTER TABLE sales_orders DROP INDEX ix_sales_orders_order_id"))
+            conn.execute(text("CREATE INDEX ix_sales_orders_order_id ON sales_orders (order_id)"))
+            conn.commit()
+    except Exception:
+        pass
 
 
 @app.get("/")
