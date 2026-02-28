@@ -1,8 +1,12 @@
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL ?? '';
+const isProd = process.env.NODE_ENV === 'production';
+const rawApiUrl = process.env.NEXT_PUBLIC_API_URL || (isProd ? '' : 'http://localhost:8000');
 const API = rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl;
 
 export async function api<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${API}${path}`, {
+  // If we are on production and have a public API URL, use it entirely.
+  // Otherwise default to standard proxy format over relative paths
+  const fetchUrl = (isProd && API) ? `${API}${path}` : path;
+  const res = await fetch(fetchUrl, {
     ...options,
     headers: { 'Content-Type': 'application/json', ...options?.headers },
   });
@@ -17,7 +21,8 @@ export async function api<T>(path: string, options?: RequestInit): Promise<T> {
 export async function uploadExcel(file: File) {
   const form = new FormData();
   form.append('file', file);
-  const res = await fetch(`${API}/api/orders/upload-excel`, {
+  const fetchUrl = (isProd && API) ? `${API}/api/orders/upload-excel` : '/api/orders/upload-excel';
+  const res = await fetch(fetchUrl, {
     method: 'POST',
     body: form,
   });
