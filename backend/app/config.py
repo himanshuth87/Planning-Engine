@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         if url.startswith("postgres://"):
             url = url.replace("postgres://", "postgresql://", 1)
         # SQLAlchemy requires 'mysql+pymysql://' for PyMySQL driver (easier to install)
-        elif url.startswith("mysql://"):
+        if url.startswith("mysql://"):
             url = url.replace("mysql://", "mysql+pymysql://", 1)
         return url
 
