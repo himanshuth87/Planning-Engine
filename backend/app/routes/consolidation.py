@@ -18,6 +18,10 @@ def reset_consolidation(db: Session = Depends(get_db)):
         SalesOrder.consolidated_batch_id: None,
         SalesOrder.production_plan_id: None
     }, synchronize_session=False)
+    # Unlink Circular FK constraint between Batch and Plan
+    db.query(ConsolidatedBatch).update({
+        ConsolidatedBatch.production_plan_id: None
+    }, synchronize_session=False)
     # Delete all Production Plans (since they rely on batches)
     db.query(ProductionPlan).delete(synchronize_session=False)
     # Delete all Consolidated Batches
