@@ -37,7 +37,7 @@ class ConsolidatedBatch(Base):
     production_plan_id = Column(Integer, ForeignKey("production_plans.id"), nullable=True)
 
     orders = relationship("SalesOrder", back_populates="consolidated_batch")
-    production_plan = relationship("ProductionPlan", back_populates="batch")
+    production_plan = relationship("ProductionPlan", back_populates="batch", foreign_keys="[ProductionPlan.batch_id]")
 
 
 class ProductionPlan(Base):
