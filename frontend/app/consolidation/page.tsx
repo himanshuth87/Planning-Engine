@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getBatches, runConsolidation } from '@/lib/api';
-import { Layers, Loader2, RefreshCw } from 'lucide-react';
+import { getBatches, runConsolidation, resetConsolidation } from '@/lib/api';
+import { Layers, Loader2, RefreshCw, Trash2 } from 'lucide-react';
 
 export default function ConsolidationPage() {
   const [batches, setBatches] = useState<Awaited<ReturnType<typeof getBatches>>>([]);
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   const load = () => {
     setLoading(true);
@@ -18,7 +19,20 @@ export default function ConsolidationPage() {
 
   const run = () => {
     setRunning(true);
-    runConsolidation().then((newBatches) => setBatches((prev) => [...(newBatches || []), ...prev])).catch(() => {}).finally(() => setRunning(false));
+    runConsolidation().then((newBatches) => setBatches((prev) => [...(newBatches || []), ...prev])).catch(() => { }).finally(() => setRunning(false));
+  };
+
+  const reset = async () => {
+    if (!confirm('Are you sure you want to reset all batches? This will also wipe your production schedule.')) return;
+    setResetting(true);
+    try {
+      await resetConsolidation();
+      load();
+    } catch (e) {
+      alert('Failed to reset consolidation');
+    } finally {
+      setResetting(false);
+    }
   };
 
   return (
@@ -26,14 +40,24 @@ export default function ConsolidationPage() {
       <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Order Consolidation</h1>
       <p style={{ color: 'var(--gray-500)', marginBottom: 24 }}>Group orders by Product + Color and sum quantities into batches</p>
 
-      <button
-        onClick={run}
-        disabled={running}
-        style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 20px', background: 'var(--red)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14, marginBottom: 24 }}
-      >
-        {running ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <RefreshCw size={18} />}
-        Run Consolidation
-      </button>
+      <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
+        <button
+          onClick={run}
+          disabled={running || resetting}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 20px', background: 'var(--red)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14 }}
+        >
+          {running ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <RefreshCw size={18} />}
+          Run Consolidation
+        </button>
+        <button
+          onClick={reset}
+          disabled={running || resetting || batches.length === 0}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '12px 20px', background: 'var(--gray-700)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600, fontSize: 14 }}
+        >
+          {resetting ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Trash2 size={18} />}
+          Reset Engine
+        </button>
+      </div>
 
       <div style={{ background: 'var(--gray-800)', borderRadius: 12, border: '1px solid var(--gray-700)', overflow: 'hidden' }}>
         {loading ? (

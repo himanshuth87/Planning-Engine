@@ -65,6 +65,10 @@ export function runConsolidation() {
   return api<Array<{ id: number; product_name: string; color: string; total_quantity: number; order_ids: string | null }>>('/api/consolidation/run', { method: 'POST' });
 }
 
+export function resetConsolidation() {
+  return api('/api/consolidation/reset', { method: 'DELETE' });
+}
+
 export function getBatches() {
   return api<Array<{ id: number; product_name: string; color: string; total_quantity: number; order_ids: string | null }>>('/api/consolidation/batches');
 }
