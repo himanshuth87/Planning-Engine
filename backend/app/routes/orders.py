@@ -60,6 +60,7 @@ async def upload_excel(file: UploadFile = File(...), db: Session = Depends(get_d
         )
     created = 0
     errors = []
+    seen_in_batch = set()
     for _, row in df.iterrows():
         try:
             if pd.isna(row["Order ID"]):
@@ -68,9 +69,11 @@ async def upload_excel(file: UploadFile = File(...), db: Session = Depends(get_d
             if not order_id:
                 continue
 
-            if db.query(SalesOrder).filter(SalesOrder.order_id == order_id).first():
+            if order_id in seen_in_batch or db.query(SalesOrder).filter(SalesOrder.order_id == order_id).first():
                 errors.append(f"Duplicate Order ID: {order_id}")
                 continue
+                
+            seen_in_batch.add(order_id)
 
             delivery = row["Delivery Date"]
             if pd.isna(delivery):
