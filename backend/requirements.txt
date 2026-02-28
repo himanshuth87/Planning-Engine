@@ -9,7 +9,7 @@ PyMySQL==1.1.0
 
 # Excel & Data
 openpyxl==3.1.2
-pandas==2.2.0
+pandas>=2.2.3
 
 # Validation & Utils
 pydantic==2.5.3
