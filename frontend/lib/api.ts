@@ -47,6 +47,10 @@ export function getDashboardStats() {
 }
 
 // Orders
+export function deleteAllOrders() {
+  return api('/api/orders/all', { method: 'DELETE' });
+}
+
 export function getOrders(status?: string) {
   const q = status ? `?status=${status}` : '';
   return api<Array<{ id: number; order_id: string; product_name: string; quantity: number; color: string; delivery_date: string; status: string }>>(`/api/orders/${q}`);

@@ -107,6 +107,13 @@ def update_order_status(order_id: str, status: str, db: Session = Depends(get_db
     return order
 
 
+@router.delete("/all")
+def delete_all_orders(db: Session = Depends(get_db)):
+    db.query(SalesOrder).delete()
+    db.commit()
+    return {"ok": True}
+
+
 @router.delete("/{order_id}")
 def delete_order(order_id: str, db: Session = Depends(get_db)):
     order = db.query(SalesOrder).filter(SalesOrder.order_id == order_id).first()

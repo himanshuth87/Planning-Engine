@@ -14,6 +14,11 @@ export default function RawMaterialsPage() {
   const [newMaterial, setNewMaterial] = useState({ name: '', unit: 'kg' });
   const [newProduct, setNewProduct] = useState('');
 
+  // BOM state
+  const [selectedProduct, setSelectedProduct] = useState<number | null>(null);
+  const [selectedRM, setSelectedRM] = useState<number | null>(null);
+  const [qtyPerUnit, setQtyPerUnit] = useState<number>(1);
+
   const load = () => {
     setLoading(true);
     Promise.all([getRawMaterials(), getProducts(), getBatches()])
@@ -22,7 +27,7 @@ export default function RawMaterialsPage() {
         setProducts(p);
         setBatches(b);
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   };
 
@@ -35,12 +40,19 @@ export default function RawMaterialsPage() {
 
   const addMaterial = () => {
     if (!newMaterial.name.trim()) return;
-    createRawMaterial(newMaterial).then(() => { setNewMaterial({ name: '', unit: 'kg' }); load(); }).catch(() => {});
+    createRawMaterial(newMaterial).then(() => { setNewMaterial({ name: '', unit: 'kg' }); load(); }).catch(() => { });
   };
 
   const addProduct = () => {
     if (!newProduct.trim()) return;
-    createProduct({ name: newProduct }).then(() => { setNewProduct(''); load(); }).catch(() => {});
+    createProduct({ name: newProduct }).then(() => { setNewProduct(''); load(); }).catch(() => { });
+  };
+
+  const addBOM = () => {
+    if (!selectedProduct || !selectedRM || qtyPerUnit <= 0) return;
+    addProductMaterial(selectedProduct, { raw_material_id: selectedRM, quantity_per_unit: qtyPerUnit })
+      .then(() => { load(); setSelectedRM(null); setQtyPerUnit(1); })
+      .catch(() => alert('Failed to add BOM mapping'));
   };
 
   return (
@@ -88,7 +100,7 @@ export default function RawMaterialsPage() {
                 />
                 <button onClick={addProduct} style={{ padding: '8px 16px', background: 'var(--red)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600 }}>Add</button>
               </div>
-              <ul style={{ listStyle: 'none' }}>
+              <ul style={{ listStyle: 'none', marginBottom: 24 }}>
                 {products.map((p) => (
                   <li key={p.id} style={{ padding: '8px 0', borderBottom: '1px solid var(--gray-700)' }}>
                     {p.name}
@@ -96,6 +108,38 @@ export default function RawMaterialsPage() {
                   </li>
                 ))}
               </ul>
+
+              <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Map Raw Material to Product (BOM)</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <select
+                  value={selectedProduct || ''}
+                  onChange={e => setSelectedProduct(Number(e.target.value) || null)}
+                  style={{ padding: '8px 12px', background: 'var(--gray-900)', border: '1px solid var(--gray-700)', borderRadius: 8, color: 'var(--white)' }}
+                >
+                  <option value="">Select Product...</option>
+                  {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                </select>
+                <select
+                  value={selectedRM || ''}
+                  onChange={e => setSelectedRM(Number(e.target.value) || null)}
+                  style={{ padding: '8px 12px', background: 'var(--gray-900)', border: '1px solid var(--gray-700)', borderRadius: 8, color: 'var(--white)' }}
+                >
+                  <option value="">Select Raw Material...</option>
+                  {materials.map(m => <option key={m.id} value={m.id}>{m.name} ({m.unit})</option>)}
+                </select>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <input
+                    type="number"
+                    placeholder="Qty per unit"
+                    value={qtyPerUnit}
+                    onChange={e => setQtyPerUnit(Number(e.target.value))}
+                    min={0.1}
+                    step={0.1}
+                    style={{ padding: '8px 12px', background: 'var(--gray-900)', border: '1px solid var(--gray-700)', borderRadius: 8, color: 'var(--white)', flex: 1 }}
+                  />
+                  <button onClick={addBOM} style={{ padding: '8px 16px', background: 'var(--red)', color: 'white', border: 'none', borderRadius: 8, fontWeight: 600 }}>Map RM</button>
+                </div>
+              </div>
             </section>
           </div>
 

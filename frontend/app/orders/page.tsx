@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { getOrders, uploadExcel } from '@/lib/api';
-import { Upload, Loader2, FileSpreadsheet } from 'lucide-react';
+import { getOrders, uploadExcel, deleteAllOrders } from '@/lib/api';
+import { Upload, Loader2, FileSpreadsheet, Trash2 } from 'lucide-react';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Awaited<ReturnType<typeof getOrders>>>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [uploadResult, setUploadResult] = useState<{ created: number; errors: string[] } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -22,6 +23,19 @@ export default function OrdersPage() {
   useEffect(() => {
     load();
   }, []);
+
+  const handleDeleteAll = async () => {
+    if (!confirm('Are you sure you want to delete all orders? This cannot be undone.')) return;
+    setDeleting(true);
+    try {
+      await deleteAllOrders();
+      load();
+    } catch (err) {
+      alert('Failed to delete all orders');
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const onFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -51,7 +65,7 @@ export default function OrdersPage() {
         <input ref={fileRef} type="file" accept=".xlsx,.xls,.csv" onChange={onFileChange} style={{ display: 'none' }} />
         <button
           onClick={() => fileRef.current?.click()}
-          disabled={uploading}
+          disabled={uploading || deleting}
           style={{
             display: 'flex', alignItems: 'center', gap: 8,
             padding: '12px 20px', background: 'var(--red)', color: 'white',
@@ -60,6 +74,18 @@ export default function OrdersPage() {
         >
           {uploading ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Upload size={18} />}
           Upload Excel
+        </button>
+        <button
+          onClick={handleDeleteAll}
+          disabled={uploading || deleting || orders.length === 0}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '12px 20px', background: 'var(--gray-800)', color: 'white',
+            border: '1px solid var(--gray-700)', borderRadius: 8, fontWeight: 600, fontSize: 14, cursor: orders.length === 0 ? 'not-allowed' : 'pointer'
+          }}
+        >
+          {deleting ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <Trash2 size={18} />}
+          Delete All
         </button>
       </div>
 
