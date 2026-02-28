@@ -163,3 +163,4 @@ class DashboardStats(BaseModel):
     today_plan: List[dict]
     pending_orders: List[dict]
     delayed_orders: List[dict]
+    today_rm_requirements: List[dict] = []

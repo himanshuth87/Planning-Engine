@@ -52,10 +52,12 @@ export default function DashboardPage() {
             <div
               key={c.label}
               style={{
-                background: c.color || 'var(--gray-800)',
-                borderRadius: 12,
+                background: c.color || 'var(--glass-bg)',
+                borderRadius: 16,
                 padding: 24,
-                border: '1px solid var(--gray-800)',
+                border: '1px solid var(--glass-border)',
+                backdropFilter: 'blur(10px)',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -70,7 +72,7 @@ export default function DashboardPage() {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-        <section style={{ background: 'var(--gray-800)', borderRadius: 12, padding: 24, border: '1px solid var(--gray-700)' }}>
+        <section style={{ background: 'var(--glass-bg)', borderRadius: 16, padding: 24, border: '1px solid var(--glass-border)', backdropFilter: 'blur(10px)' }}>
           <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Today&apos;s Production Plan</h2>
           {stats?.today_plan?.length ? (
             <table style={{ width: '100%', fontSize: 14 }}>
@@ -98,7 +100,7 @@ export default function DashboardPage() {
           )}
         </section>
 
-        <section style={{ background: 'var(--gray-800)', borderRadius: 12, padding: 24, border: '1px solid var(--gray-700)' }}>
+        <section style={{ background: 'var(--glass-bg)', borderRadius: 16, padding: 24, border: '1px solid var(--glass-border)', backdropFilter: 'blur(10px)' }}>
           <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Delay Alerts</h2>
           {stats?.delayed_orders?.length ? (
             <table style={{ width: '100%', fontSize: 14 }}>
@@ -125,35 +127,54 @@ export default function DashboardPage() {
         </section>
       </div>
 
-      <section style={{ marginTop: 24, background: 'var(--gray-800)', borderRadius: 12, padding: 24, border: '1px solid var(--gray-700)' }}>
-        <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Pending Orders</h2>
-        {stats?.pending_orders?.length ? (
-          <table style={{ width: '100%', fontSize: 14 }}>
-            <thead>
-              <tr style={{ textAlign: 'left', color: 'var(--gray-500)', borderBottom: '1px solid var(--gray-700)' }}>
-                <th style={{ paddingBottom: 12 }}>Order ID</th>
-                <th style={{ paddingBottom: 12 }}>Product</th>
-                <th style={{ paddingBottom: 12 }}>Color</th>
-                <th style={{ paddingBottom: 12 }}>Qty</th>
-                <th style={{ paddingBottom: 12 }}>Delivery</th>
-              </tr>
-            </thead>
-            <tbody>
-              {stats.pending_orders.slice(0, 10).map((o) => (
-                <tr key={o.id} style={{ borderBottom: '1px solid var(--gray-800)' }}>
-                  <td style={{ padding: '12px 0' }}>{o.order_id}</td>
-                  <td>{o.product_name}</td>
-                  <td>{o.color}</td>
-                  <td>{o.quantity}</td>
-                  <td>{o.delivery_date}</td>
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 24, marginTop: 24 }}>
+        <section style={{ background: 'var(--glass-bg)', borderRadius: 16, padding: 24, border: '1px solid var(--glass-border)', backdropFilter: 'blur(10px)' }}>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Pending Orders</h2>
+          {stats?.pending_orders?.length ? (
+            <table style={{ width: '100%', fontSize: 14 }}>
+              <thead>
+                <tr style={{ textAlign: 'left', color: 'var(--gray-500)', borderBottom: '1px solid var(--gray-700)' }}>
+                  <th style={{ paddingBottom: 12 }}>Order ID</th>
+                  <th style={{ paddingBottom: 12 }}>Product</th>
+                  <th style={{ paddingBottom: 12 }}>Color</th>
+                  <th style={{ paddingBottom: 12 }}>Qty</th>
+                  <th style={{ paddingBottom: 12 }}>Delivery</th>
                 </tr>
+              </thead>
+              <tbody>
+                {stats.pending_orders.slice(0, 10).map((o) => (
+                  <tr key={o.id} style={{ borderBottom: '1px solid var(--gray-800)' }}>
+                    <td style={{ padding: '12px 0' }}>{o.order_id}</td>
+                    <td>{o.product_name}</td>
+                    <td>{o.color}</td>
+                    <td>{o.quantity}</td>
+                    <td>{o.delivery_date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ) : (
+            <p style={{ color: 'var(--gray-500)' }}>No pending orders.</p>
+          )}
+        </section>
+
+        <section style={{ background: 'var(--glass-bg)', borderRadius: 16, padding: 24, border: '1px solid var(--glass-border)', backdropFilter: 'blur(10px)' }}>
+          <h2 style={{ fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Today's RM Requirements</h2>
+          <p style={{ color: 'var(--gray-500)', fontSize: 13, marginBottom: 16 }}>Computed from Today's Production BOM</p>
+          {stats?.today_rm_requirements && stats.today_rm_requirements.length > 0 ? (
+            <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              {stats.today_rm_requirements.map((rm) => (
+                <li key={rm.name + rm.unit} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.03)', padding: '12px 16px', borderRadius: 8, border: '1px solid var(--glass-border)' }}>
+                  <span style={{ fontWeight: 500 }}>{rm.name}</span>
+                  <span style={{ color: 'var(--accent)', fontWeight: 600 }}>{rm.total} {rm.unit}</span>
+                </li>
               ))}
-            </tbody>
-          </table>
-        ) : (
-          <p style={{ color: 'var(--gray-500)' }}>No pending orders.</p>
-        )}
-      </section>
+            </ul>
+          ) : (
+            <p style={{ color: 'var(--gray-500)' }}>No raw materials required today.</p>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

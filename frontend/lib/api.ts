@@ -43,6 +43,7 @@ export function getDashboardStats() {
     today_plan: Array<{ id: number; planned_date: string; product_name: string; color: string; quantity_planned: number; status: string; machine_id: number | null }>;
     pending_orders: Array<{ id: number; order_id: string; product_name: string; quantity: number; color: string; delivery_date: string; status: string }>;
     delayed_orders: Array<{ id: number; order_id: string; product_name: string; quantity: number; color: string; delivery_date: string; status: string }>;
+    today_rm_requirements: Array<{ name: string; unit: string; total: number }>;
   }>('/api/dashboard/stats');
 }
 

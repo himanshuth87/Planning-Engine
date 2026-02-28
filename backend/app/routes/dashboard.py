@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import SalesOrder, ProductionPlan
 from app.schemas import DashboardStats
+from app.services.raw_material_calc import get_rm_requirements_for_plans
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -51,6 +52,15 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
     for o in at_risk:
         if o.id not in [d.id for d in delayed]:
             delayed.append(o)
+    today_rm_reqs_full = get_rm_requirements_for_plans(db, [p.id for p in today_plans])
+    aggregated_rm = {}
+    for batch_req in today_rm_reqs_full:
+        for r in batch_req.requirements:
+            key = f"{r.raw_material_name}_{r.unit}"
+            if key not in aggregated_rm:
+                aggregated_rm[key] = {"name": r.raw_material_name, "unit": r.unit, "total": 0}
+            aggregated_rm[key]["total"] += r.total_quantity
+
     return DashboardStats(
         today_plan_count=len(today_plans),
         pending_orders_count=len(pending),
@@ -59,4 +69,5 @@ def get_dashboard_stats(db: Session = Depends(get_db)):
         today_plan=[_plan_to_dict(p) for p in today_plans],
         pending_orders=[_order_to_dict(o) for o in pending[:50]],
         delayed_orders=[_order_to_dict(o) for o in delayed[:20]],
+        today_rm_requirements=list(aggregated_rm.values()),
     )

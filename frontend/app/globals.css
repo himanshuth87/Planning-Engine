@@ -1,23 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --navy: #0d1b2a;
-  --navy-light: #1b263b;
-  --black: #0a0a0a;
-  --red: #c41e3a;
-  --red-hover: #a01830;
-  --red-muted: rgba(196, 30, 58, 0.15);
-  --white: #fafafa;
-  --gray-100: #f1f1f1;
-  --gray-200: #e5e5e5;
-  --gray-400: #a3a3a3;
-  --gray-500: #737373;
-  --gray-700: #404040;
-  --gray-800: #262626;
-  --gray-900: #171717;
-  --success: #16a34a;
-  --warning: #ca8a04;
-  --danger: #dc2626;
+  --navy: #0F172A;
+  --navy-light: #1E293B;
+  --black: #020617;
+  --red: #E11D48;
+  --red-hover: #BE123C;
+  --red-muted: rgba(225, 29, 72, 0.15);
+  --white: #F8FAFC;
+  --gray-100: #F1F5F9;
+  --gray-200: #E2E8F0;
+  --gray-400: #94A3B8;
+  --gray-500: #64748B;
+  --gray-700: #334155;
+  --gray-800: #1E293B;
+  --gray-900: #0F172A;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --accent: #3B82F6;
+  --glass-bg: rgba(30, 41, 59, 0.5);
+  --glass-border: rgba(255, 255, 255, 0.05);
 }
 
 * {
@@ -31,7 +34,7 @@ body {
   max-width: 100vw;
   min-height: 100vh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  background: var(--gray-900);
+  background: linear-gradient(135deg, #020617 0%, #0F172A 100%);
   color: var(--white);
 }
 
