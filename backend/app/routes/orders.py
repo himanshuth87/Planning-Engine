@@ -62,22 +62,39 @@ async def upload_excel(file: UploadFile = File(...), db: Session = Depends(get_d
     errors = []
     for _, row in df.iterrows():
         try:
-            order_id = str(row["Order ID"]).strip()
-            if not order_id or pd.isna(order_id):
+            if pd.isna(row["Order ID"]):
                 continue
+            order_id = str(row["Order ID"]).strip()
+            if not order_id:
+                continue
+
             if db.query(SalesOrder).filter(SalesOrder.order_id == order_id).first():
                 errors.append(f"Duplicate Order ID: {order_id}")
                 continue
+
             delivery = row["Delivery Date"]
+            if pd.isna(delivery):
+                errors.append(f"Row {order_id}: Missing Delivery Date")
+                continue
             if hasattr(delivery, "date"):
                 delivery = delivery.date()
             elif isinstance(delivery, str):
                 delivery = date.fromisoformat(delivery[:10])
+
+            color = row["Color"]
+            color_str = "Default" if pd.isna(color) else str(color).strip()
+            
+            prod_name = row["Product Name"]
+            prod_name_str = "Unknown" if pd.isna(prod_name) else str(prod_name).strip()
+
+            qty = row["Quantity"]
+            qty_int = 0 if pd.isna(qty) else int(float(qty))
+
             order = SalesOrder(
                 order_id=order_id,
-                product_name=str(row["Product Name"]).strip(),
-                quantity=int(float(row["Quantity"])),
-                color=str(row["Color"]).strip(),
+                product_name=prod_name_str,
+                quantity=qty_int,
+                color=color_str,
                 delivery_date=delivery,
             )
             db.add(order)
