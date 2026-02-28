@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect, useState, useRef } from 'react';
-import { getOrders, uploadExcel, deleteAllOrders } from '@/lib/api';
-import { Upload, Loader2, FileSpreadsheet, Trash2 } from 'lucide-react';
+import { getOrders, uploadExcel, deleteAllOrders, updateOrderStatus } from '@/lib/api';
+import { Upload, Loader2, FileSpreadsheet, Trash2, CheckCircle2 } from 'lucide-react';
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Awaited<ReturnType<typeof getOrders>>>([]);
@@ -34,6 +34,16 @@ export default function OrdersPage() {
       alert('Failed to delete all orders');
     } finally {
       setDeleting(false);
+    }
+  };
+
+  const handleStatusChange = async (id: number, newStatus: string) => {
+    try {
+      setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o));
+      await updateOrderStatus(id, newStatus);
+    } catch (err) {
+      alert('Failed to update status');
+      load();
     }
   };
 
@@ -129,9 +139,26 @@ export default function OrdersPage() {
                   <td style={{ padding: '14px 20px' }}>{o.quantity}</td>
                   <td style={{ padding: '14px 20px' }}>{o.delivery_date}</td>
                   <td style={{ padding: '14px 20px' }}>
-                    <span style={{ padding: '4px 10px', borderRadius: 6, fontSize: 12, background: o.status === 'completed' ? 'var(--success)' : o.status === 'delayed' ? 'var(--danger)' : 'var(--gray-700)', color: 'white' }}>
-                      {o.status}
-                    </span>
+                    <select
+                      value={o.status}
+                      onChange={(e) => handleStatusChange(o.id, e.target.value)}
+                      style={{
+                        padding: '4px 8px',
+                        borderRadius: 6,
+                        border: '1px solid var(--gray-700)',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        background: o.status === 'completed' ? 'var(--success)' : o.status === 'delayed' ? 'var(--danger)' : o.status === 'scheduled' ? 'var(--accent)' : 'var(--gray-800)',
+                        color: 'white',
+                        cursor: 'pointer',
+                        outline: 'none'
+                      }}
+                    >
+                      <option value="pending" style={{ background: 'var(--gray-800)' }}>Pending</option>
+                      <option value="scheduled" style={{ background: 'var(--gray-800)' }}>Scheduled</option>
+                      <option value="delayed" style={{ background: 'var(--gray-800)' }}>Delayed</option>
+                      <option value="completed" style={{ background: 'var(--gray-800)' }}>Completed</option>
+                    </select>
                   </td>
                 </tr>
               ))}

@@ -121,17 +121,17 @@ async def upload_excel(file: UploadFile = File(...), db: Session = Depends(get_d
     return {"created": created, "errors": errors}
 
 
-@router.get("/{order_id}", response_model=SalesOrderResponse)
-def get_order(order_id: str, db: Session = Depends(get_db)):
-    order = db.query(SalesOrder).filter(SalesOrder.order_id == order_id).first()
+@router.get("/{id}", response_model=SalesOrderResponse)
+def get_order(id: int, db: Session = Depends(get_db)):
+    order = db.query(SalesOrder).filter(SalesOrder.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     return order
 
 
-@router.patch("/{order_id}/status")
-def update_order_status(order_id: str, status: str, db: Session = Depends(get_db)):
-    order = db.query(SalesOrder).filter(SalesOrder.order_id == order_id).first()
+@router.patch("/{id}/status")
+def update_order_status(id: int, status: str, db: Session = Depends(get_db)):
+    order = db.query(SalesOrder).filter(SalesOrder.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     order.status = status
@@ -147,9 +147,9 @@ def delete_all_orders(db: Session = Depends(get_db)):
     return {"ok": True}
 
 
-@router.delete("/{order_id}")
-def delete_order(order_id: str, db: Session = Depends(get_db)):
-    order = db.query(SalesOrder).filter(SalesOrder.order_id == order_id).first()
+@router.delete("/{id}")
+def delete_order(id: int, db: Session = Depends(get_db)):
+    order = db.query(SalesOrder).filter(SalesOrder.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
     db.delete(order)

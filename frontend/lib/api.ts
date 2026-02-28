@@ -61,6 +61,10 @@ export function createOrder(data: { order_id: string; product_name: string; quan
   return api('/api/orders/', { method: 'POST', body: JSON.stringify(data) });
 }
 
+export function updateOrderStatus(id: number, status: string) {
+  return api(`/api/orders/${id}/status?status=${status}`, { method: 'PATCH' });
+}
+
 // Consolidation
 export function runConsolidation() {
   return api<Array<{ id: number; product_name: string; color: string; total_quantity: number; order_ids: string | null }>>('/api/consolidation/run', { method: 'POST' });
