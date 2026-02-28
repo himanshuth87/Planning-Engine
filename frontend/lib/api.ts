@@ -105,6 +105,21 @@ export function createRawMaterial(data: { name: string; unit?: string }) {
   return api('/api/raw-materials/materials', { method: 'POST', body: JSON.stringify(data) });
 }
 
+export async function uploadBOM(file: File) {
+  const form = new FormData();
+  form.append('file', file);
+  const fetchUrl = (isProd && API) ? `${API}/api/raw-materials/upload-bom` : '/api/raw-materials/upload-bom';
+  const res = await fetch(fetchUrl, {
+    method: 'POST',
+    body: form,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || JSON.stringify(err));
+  }
+  return res.json();
+}
+
 export function createProduct(data: { name: string }) {
   return api('/api/raw-materials/products', { method: 'POST', body: JSON.stringify(data) });
 }
